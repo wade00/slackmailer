@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Slackmailer</title>
+    <link href="<%= url('/layout.css') %>" rel="stylesheet" type="text/css" />
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Open+Sans:300,700' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Slackmailer</h1>
+    </div>
+    <div class="container">
+      <div class="header new-campaign-header">
+        <h1>Let's start a new campaign, shall we?</h1>
+        <h3>Pick the links you want to include from last week:</h3>
+      </div>
+      <div class="link-form-container">
+        <form action="/campaigns/send" method="post">
+          <% @links.each do |link| %>
+            <input type="checkbox" name="link_<%= link[:id] %>"
+                   value="<%= link[:title] %>|||<%= link[:url] %>|||<%= link[:preview] %>">
+            <a href="<%= link[:url] %>" class="link-title"><%= link[:title] %></a>
+            <p class="link-preview"><%= link[:preview] %></p>
+          <% end %>
+          <div class="form-action-container">
+            <input type="submit" value="Send campaign" class="send-campaign-btn">
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
