@@ -3,6 +3,7 @@ GEM
   specs:
     chronic (0.10.2)
     daemons (1.2.3)
+    dotenv (2.0.2)
     eventmachine (1.0.8)
     httmultiparty (0.3.16)
       httparty (>= 0.7.3)
@@ -39,6 +40,7 @@ PLATFORMS
 
 DEPENDENCIES
   chronic
+  dotenv
   shotgun
   sinatra
   slackbotsy
