@@ -15,7 +15,6 @@ campaign_config = {
   slack_channel_id:   ENV["SLACK_CHANNEL_ID"]
   slack_channel_name: "links"
   mailchimp_api_key:  ENV["MAILCHIMP_API_KEY"]
-  mailer_list_id:     ENV["MAILER_LIST_ID"]
   mailer_template_id: ENV["MAILER_TEMPLATE_ID"]
   mailchimp_api_url:  "https://us5.api.mailchimp.com/2.0/"
 }
@@ -45,11 +44,25 @@ get "/authorize" do
 end
 
 get "/campaigns/new" do
-  auth_token   = params[:token]
-  one_week_ago = Chronic.parse("one week ago").to_i
-  hist_url     = "https://slack.com/api/channels.history?token=#{auth_token}&channel=#{campaign_config[:slack_channel_id]}&oldest=#{one_week_ago}"
-  response     = JSON.parse(HTTParty.get(hist_url).body)
-  @links       = []
+  @slack_auth_token   = params[:token]
+  mailchimp_lists_url = campaign_config[:mailchimp_api_url] + "lists/list.json"
+  list_request_body   = { apikey: campaign_config[:mailchimp_api_key] }
+  request_headers     = { "Content-Type" => "application/json" }
+
+  response = HTTParty.post(mailchimp_lists_url, body: list_request_body.to_json, headers: request_headers)
+
+  @mailchimp_lists = response["data"]
+
+  erb "setup_campaign.html".to_sym
+end
+
+post "/campaigns/links" do
+  auth_token = params[:slack_auth_token]
+  timeframe  = Chronic.parse(params[:timeframe]).to_i
+  hist_url   = "https://slack.com/api/channels.history?token=#{auth_token}&channel=#{campaign_config[:slack_channel_id]}&oldest=#{timeframe}"
+  response   = JSON.parse(HTTParty.get(hist_url).body)
+  @mailchimp_list = params[:mailchimp_list]
+  @links     = []
 
   if response["messages"].nil?
     erb "no_links.html".to_sym
@@ -76,19 +89,24 @@ get "/campaigns/new" do
 end
 
 post "/campaigns/send" do
-  links_html = ""
+  @mailchimp_list = params[:mailchimp_list]
+  links_html     = ""
 
   @included_links = params.map do |key, value|
-    values = value.split("|||")
-    { title: values[0], url: values[1], preview: values[2] }
-  end
+    if value.include?("|||")
+      values = value.split("|||")
+      { title: values[0], url: values[1], preview: values[2] }
+    else
+      nil
+    end
+  end.compact!
 
   @included_links.each do |link|
     links_html += "<tr><td><p><a href='#{link[:url]}'>#{link[:title]}</a><br />#{link[:preview]}</p></td></tr>"
     links_html
   end
 
-  send_mailchimp_campaign(content: links_html, config: campaign_config)
+  send_mailchimp_campaign(content: links_html, config: campaign_config, list: @mailchimp_list)
 
   erb "send_campaign_confirmation.html".to_sym
 end
@@ -97,11 +115,12 @@ private
 
   def send_mailchimp_campaign(args)
     campaign_config   = args[:config]
+    mailer_list       = args[:list]
     new_campaign_url  = campaign_config[:mailchimp_api_url] + "campaigns/create.json"
     send_campaign_url = campaign_config[:mailchimp_api_url] + "campaigns/send.json"
     request_headers   = { "Content-Type" => "application/json" }
 
-    new_campaign_options = { list_id: campaign_config[:mailer_list_id],
+    new_campaign_options = { list_id: mailer_list,
                              subject: "LPL Weekly",
                              from_email: "contact@launchpadlab.com",
                              from_name: "LaunchPad Lab",
