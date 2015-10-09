@@ -9,13 +9,13 @@ require "chronic"
 Bundler.require
 
 campaign_config = {
-  client_id:          ENV["CLIENT_ID"]
-  client_secret:      ENV["CLIENT_SECRET"]
-  slack_team_id:      ENV["SLACK_TEAM_ID"]
-  slack_channel_id:   ENV["SLACK_CHANNEL_ID"]
-  slack_channel_name: "links"
-  mailchimp_api_key:  ENV["MAILCHIMP_API_KEY"]
-  mailer_template_id: ENV["MAILER_TEMPLATE_ID"]
+  client_id:          ENV["CLIENT_ID"],
+  client_secret:      ENV["CLIENT_SECRET"],
+  slack_team_id:      ENV["SLACK_TEAM_ID"],
+  slack_channel_id:   ENV["SLACK_CHANNEL_ID"],
+  slack_channel_name: "links",
+  mailchimp_api_key:  ENV["MAILCHIMP_API_KEY"],
+  mailer_template_id: ENV["MAILER_TEMPLATE_ID"],
   mailchimp_api_url:  "https://us5.api.mailchimp.com/2.0/"
 }
 
