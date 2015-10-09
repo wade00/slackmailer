@@ -33,7 +33,8 @@ get "/" do
 end
 
 post "/new" do
-  bot.post({ channel: campaign_config[:slack_channel_name], text: "<https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&team=#{campaign_config[:slack_team_id]}|Click this link to start a new mailer>" })
+  bot.post({ channel: campaign_config[:slack_channel_name],
+             text: "<https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&team=#{campaign_config[:slack_team_id]}|Click this link to start a new mailer>" })
 end
 
 get "/authorize" do
@@ -63,8 +64,8 @@ post "/campaigns/links" do
   timeframe  = Chronic.parse(params[:timeframe]).to_i
   hist_url   = "https://slack.com/api/channels.history?token=#{auth_token}&channel=#{campaign_config[:slack_channel_id]}&oldest=#{timeframe}"
   response   = JSON.parse(HTTParty.get(hist_url).body)
-  @mailchimp_list = params[:mailchimp_list]
   @links     = []
+  @mailchimp_list = params[:mailchimp_list]
 
   if response["messages"].nil?
     erb "no_links.html".to_sym
