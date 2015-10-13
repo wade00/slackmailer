@@ -77,7 +77,7 @@ post "/campaigns/links" do
           { id: index,
             title: attachments["title"].nil? ? attachments["from_url"] : attachments["title"],
             url: attachments["title_link"],
-            preview: attachments["text"][0..400] }
+            preview: attachments["text"].nil? ? attachments["fallback"] : attachments["text"][0..400] }
         end
       elsif message["text"].include?("<http") && message["subtype"].nil?
         url = "http" + message["text"].split("http")[1].split(">")[0]
