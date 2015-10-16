@@ -95,8 +95,6 @@ post "/campaigns/send" do
   mailchimp_list = params[:mailchimp_list]
   links_html     = ""
 
-  puts params
-
   @included_links = params.map do |key, value|
     if value.include?("|||")
       values = value.split("|||")
