@@ -92,7 +92,7 @@ post "/campaigns/links" do
 end
 
 post "/campaigns/send" do
-  @mailchimp_list = params[:mailchimp_list]
+  mailchimp_list = params[:mailchimp_list]
   links_html     = ""
 
   @included_links = params.map do |key, value|
@@ -109,7 +109,7 @@ post "/campaigns/send" do
     links_html
   end
 
-  send_mailchimp_campaign(content: links_html, config: campaign_config, list: @mailchimp_list)
+  send_mailchimp_campaign(content: links_html, config: campaign_config, list: mailchimp_list)
 
   erb "send_campaign_confirmation.html".to_sym
 end
