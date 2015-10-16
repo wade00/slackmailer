@@ -4,12 +4,12 @@
     <h3>Pick the links you want to include, or <a href="#", class="link" id="select-all-links">click here to select all of the links.</a></h3>
   </div>
   <div class="link-form-container">
-    <form action="/campaigns/send" method="post">
+    <form action="/campaigns/send" method="post" onsubmit="return updateLinkPreviews()">
       <% @links.each do |link| %>
         <input type="checkbox" name="link_<%= link[:id] %>" class="link-checkbox"
                value="<%= link[:title] %>|||<%= link[:url] %>|||<%= link[:preview] %>">
         <a href="<%= link[:url] %>" class="link link-title"><%= link[:title] %></a>
-        <p class="link-preview"><%= link[:preview] %></p>
+        <textarea class="link-preview" rows="5"><%= link[:preview] %></textarea>
       <% end %>
       <input type="hidden" name="mailchimp_list" value="<%= @mailchimp_list %>">
       <div class="form-action-container">

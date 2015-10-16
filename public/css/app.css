@@ -38,6 +38,7 @@ body {
 .link-preview {
   font-size: 14px;
   margin: 0 0 20px 20px;
+  width: 95%;
 }
 
 .form-action-container {
