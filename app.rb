@@ -17,7 +17,7 @@ campaign_config = {
   slack_channel_id:   ENV["SLACK_CHANNEL_ID"],
   mailchimp_api_key:  ENV["MAILCHIMP_API_KEY"],
   mailer_template_id: ENV["MAILER_TEMPLATE_ID"],
-  slack_channel_name: "links",
+  slack_channel_name: ENV["SLACK_CHANNEL_NAME"],
   mailchimp_api_url:  "https://us5.api.mailchimp.com/2.0/"
 }
 
@@ -34,7 +34,7 @@ end
 
 post "/new" do
   bot.post({ channel: campaign_config[:slack_channel_name],
-             text: "<https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&team=#{campaign_config[:slack_team_id]}|Click this link to start a new mailer>" })
+             text: "<https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&scope=identify%20channels:history%20chat:write:bot&redirect_uri=https://slackmailer.herokuapp.com/authorize?complete|Click this link to start a new mailer>" })
 end
 
 get "/authorize" do
