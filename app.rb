@@ -17,7 +17,6 @@ config = {
   mailchimp_api_key:  ENV["MAILCHIMP_API_KEY"],
   mailer_template_id: ENV["MAILER_TEMPLATE_ID"],
   outgoing_token:     ENV["OUTGOING_TOKEN"],
-  slack_channel_name: ENV["SLACK_CHANNEL_NAME"],
   mailchimp_api_url:  ENV["MAILCHIMP_API_URL"]
 }
 
