@@ -17,29 +17,35 @@ campaign_config = {
   slack_channel_id:   ENV["SLACK_CHANNEL_ID"],
   mailchimp_api_key:  ENV["MAILCHIMP_API_KEY"],
   mailer_template_id: ENV["MAILER_TEMPLATE_ID"],
-  slack_channel_name: "links",
+  incoming_webhook:   ENV["INCOMING_WEBHOOK"],
+  outgoing_token:     ENV["OUTGOING_TOKEN"],
+  slack_channel_name: "slack-testing",
   mailchimp_api_url:  "https://us5.api.mailchimp.com/2.0/"
 }
-
-bot_config = {
-  "incoming_webhook" => ENV["INCOMING_WEBHOOK"],
-  "outgoing_token"   => ENV["OUTGOING_TOKEN"]
-}
-
-bot = Slackbotsy::Bot.new(bot_config)
 
 get "/" do
   "Hello world! Welcome to the slackmailer app. We let you create and send a new MailChimp campaign from a Slack channel!"
 end
 
 post "/new" do
-  bot.post({ channel: campaign_config[:slack_channel_name],
-             text: "<https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&team=#{campaign_config[:slack_team_id]}|Click this link to start a new mailer>" })
+  auth_url   = "https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&scope=identify%20channels:history%20chat:write:bot&redirect_uri=https://slackmailer.herokuapp.com/authorize?complete"
+  response   = JSON.parse(HTTParty.get(auth_url).body)
+  auth_token = response["access_token"]
+
+  headers = { "Content-Type" => "application/json" }
+  body    = { response_type: 'ephemeral',
+              text: "<https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&team=#{campaign_config[:slack_team_id]}|Click this link to start a new mailer>" }
+
+  chat_url = "https://slack.com/api/chat.postMessage?token=#{auth_token}&channel=%23#{campaign_config[:slack_channel_name]}"
+
+
+  response = HTTParty.post(chat_url, body: body.to_json, headers: headers);
+
+  puts response
 end
 
 get "/authorize" do
-  code       = params[:code]
-  auth_url   = "https://slack.com/api/oauth.access?client_id=#{campaign_config[:client_id]}&client_secret=#{campaign_config[:client_secret]}&code=#{code}"
+  auth_url   = "https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&scope=identify%20channels:history%20chat:write:bot&redirect_uri=https://slackmailer.herokuapp.com/authorize?complete"
   response   = JSON.parse(HTTParty.get(auth_url).body)
   auth_token = response["access_token"]
 
