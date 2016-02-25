@@ -38,8 +38,7 @@ post "/new" do
 end
 
 get "/authorize" do
-  code       = params[:code]
-  auth_url   = "https://slack.com/api/oauth.access?client_id=#{campaign_config[:client_id]}&client_secret=#{campaign_config[:client_secret]}&code=#{code}"
+  auth_url   = "https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&scope=identify%20channels:history%20chat:write:bot&redirect_uri=https://slackmailer.herokuapp.com/authorize?complete"
   response   = JSON.parse(HTTParty.get(auth_url).body)
   auth_token = response["access_token"]
 
