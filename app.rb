@@ -1,7 +1,6 @@
 require "rubygems"
 require "bundler"
 require "sinatra"
-require "slackbotsy"
 require "httparty"
 require "json"
 require "chronic"
@@ -10,36 +9,34 @@ require "dotenv"
 Bundler.require
 Dotenv.load
 
-campaign_config = {
+config = {
   client_id:          ENV["CLIENT_ID"],
   client_secret:      ENV["CLIENT_SECRET"],
   slack_team_id:      ENV["SLACK_TEAM_ID"],
   slack_channel_id:   ENV["SLACK_CHANNEL_ID"],
   mailchimp_api_key:  ENV["MAILCHIMP_API_KEY"],
   mailer_template_id: ENV["MAILER_TEMPLATE_ID"],
-  slack_channel_name: ENV["SLACK_CHANNEL_NAME"],
-  mailchimp_api_url:  "https://us5.api.mailchimp.com/2.0/"
+  outgoing_token:     ENV["OUTGOING_TOKEN"],
+  mailchimp_api_url:  ENV["MAILCHIMP_API_URL"]
 }
-
-bot_config = {
-  "incoming_webhook" => ENV["INCOMING_WEBHOOK"],
-  "outgoing_token"   => ENV["OUTGOING_TOKEN"]
-}
-
-bot = Slackbotsy::Bot.new(bot_config)
 
 get "/" do
   "Hello world! Welcome to the slackmailer app. We let you create and send a new MailChimp campaign from a Slack channel!"
 end
 
 post "/new" do
-  bot.post({ channel: campaign_config[:slack_channel_name],
-             text: "<https://slack.com/oauth/authorize?client_id=#{campaign_config[:client_id]}&scope=identify%20channels:history%20chat:write:bot&redirect_uri=https://slackmailer.herokuapp.com/authorize?complete|Click this link to start a new mailer>" })
+  if params[:token] == config[:outgoing_token]
+    headers = { "Content-Type" => "application/json" }
+    body    = { response_type: "ephemeral",
+                text: "<https://slack.com/oauth/authorize?client_id=#{config[:client_id]}&team=#{config[:slack_team_id]}|Click this link to start a new mailer>" }
+
+    HTTParty.post(params[:response_url], body: body.to_json, headers: headers);
+  end
 end
 
 get "/authorize" do
   code       = params[:code]
-  auth_url   = "https://slack.com/api/oauth.access?client_id=#{campaign_config[:client_id]}&client_secret=#{campaign_config[:client_secret]}&code=#{code}"
+  auth_url   = "https://slack.com/api/oauth.access?client_id=#{config[:client_id]}&client_secret=#{config[:client_secret]}&code=#{code}"
   response   = JSON.parse(HTTParty.get(auth_url).body)
   auth_token = response["access_token"]
 
@@ -48,8 +45,8 @@ end
 
 get "/campaigns/new" do
   @slack_auth_token   = params[:token]
-  mailchimp_lists_url = campaign_config[:mailchimp_api_url] + "lists/list.json"
-  list_request_body   = { apikey: campaign_config[:mailchimp_api_key] }
+  mailchimp_lists_url = config[:mailchimp_api_url] + "lists/list.json"
+  list_request_body   = { apikey: config[:mailchimp_api_key] }
   request_headers     = { "Content-Type" => "application/json" }
 
   response = HTTParty.post(mailchimp_lists_url, body: list_request_body.to_json, headers: request_headers)
@@ -62,7 +59,7 @@ end
 post "/campaigns/links" do
   auth_token = params[:slack_auth_token]
   timeframe  = Chronic.parse(params[:timeframe]).to_i
-  hist_url   = "https://slack.com/api/channels.history?token=#{auth_token}&channel=#{campaign_config[:slack_channel_id]}&oldest=#{timeframe}"
+  hist_url   = "https://slack.com/api/channels.history?token=#{auth_token}&channel=#{config[:slack_channel_id]}&oldest=#{timeframe}"
   response   = JSON.parse(HTTParty.get(hist_url).body)
   @links     = []
   @mailchimp_list = params[:mailchimp_list]
@@ -109,7 +106,7 @@ post "/campaigns/send" do
     links_html
   end
 
-  send_mailchimp_campaign(content: links_html, config: campaign_config, list: mailchimp_list)
+  send_mailchimp_campaign(content: links_html, list: mailchimp_list)
 
   erb "send_campaign_confirmation.html".to_sym
 end
@@ -117,10 +114,9 @@ end
 private
 
   def send_mailchimp_campaign(args)
-    campaign_config   = args[:config]
     mailer_list       = args[:list]
-    new_campaign_url  = campaign_config[:mailchimp_api_url] + "campaigns/create.json"
-    send_campaign_url = campaign_config[:mailchimp_api_url] + "campaigns/send.json"
+    new_campaign_url  = config[:mailchimp_api_url] + "campaigns/create.json"
+    send_campaign_url = config[:mailchimp_api_url] + "campaigns/send.json"
     request_headers   = { "Content-Type" => "application/json" }
 
     new_campaign_options = { list_id: mailer_list,
@@ -128,14 +124,14 @@ private
                              from_email: "contact@launchpadlab.com",
                              from_name: "LaunchPad Lab",
                              to_name: "LaunchPad Friends",
-                             template_id: campaign_config[:mailer_template_id] }
+                             template_id: config[:mailer_template_id] }
     new_campaign_content = { sections: { links: args[:content] } }
-    new_campaign_request = { apikey: campaign_config[:mailchimp_api_key],
+    new_campaign_request = { apikey: config[:mailchimp_api_key],
                              type: "regular",
                              options: new_campaign_options,
                              content: new_campaign_content }
 
     campaign = HTTParty.post(new_campaign_url, body: new_campaign_request.to_json, headers: request_headers)
 
-    HTTParty.post(send_campaign_url, body: { apikey: campaign_config[:mailchimp_api_key], cid: campaign["id"] }.to_json, headers: request_headers)
+    HTTParty.post(send_campaign_url, body: { apikey: config[:mailchimp_api_key], cid: campaign["id"] }.to_json, headers: request_headers)
   end
