@@ -44,7 +44,7 @@ end
 get "/authorize" do
   code       = params[:code]
   channel_id = params[:channel_id]
-  auth_url   = "https://slack.com/api/oauth.access?client_id=#{config[:client_id]}&client_secret=#{config[:client_secret]}&code=#{code}&channel_id=#{channel_id]}"
+  auth_url   = "https://slack.com/api/oauth.access?client_id=#{config[:client_id]}&client_secret=#{config[:client_secret]}&code=#{code}&channel_id=#{channel_id}"
   response   = JSON.parse(HTTParty.get(auth_url).body)
   auth_token = response["access_token"]
 
