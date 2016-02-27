@@ -8,8 +8,7 @@ require "dotenv"
 
 Bundler.require
 Dotenv.load
-enable :sessions
-set :session_secret, ENV["SESSION_SECRET"]
+use Rack::Session::Pool
 
 config = {
   client_id:          ENV["CLIENT_ID"],
