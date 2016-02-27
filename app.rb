@@ -26,34 +26,33 @@ end
 
 post "/new" do
   if params[:token] == config[:outgoing_token]
+    session[:channel_id] = params[:channel_id]
     headers = { "Content-Type" => "application/json" }
     body    = { response_type: "ephemeral",
                 text: "It's time to build a MailChimp campaign with links from the #{params[:channel_name]} channel!",
                 attachments: [
                   {
                     color: "00ACEF",
-                    text: "<https://slack.com/oauth/authorize?client_id=#{config[:client_id]}&team=#{config[:slack_team_id]}&channel_id=#{params[:channel_id]}|Click this link to start a new mailer>"
+                    text: "<https://slack.com/oauth/authorize?client_id=#{config[:client_id]}&team=#{config[:slack_team_id]}|Click this link to start a new mailer>"
                   }
                 ]
               }
 
-    HTTParty.post(params[:response_url], body: body.to_json, headers: headers);
+    HTTParty.post(params[:response_url], body: body.to_json, headers: headers)
   end
 end
 
 get "/authorize" do
   code       = params[:code]
-  channel_id = params[:channel_id]
-  auth_url   = "https://slack.com/api/oauth.access?client_id=#{config[:client_id]}&client_secret=#{config[:client_secret]}&code=#{code}&channel_id=#{channel_id}"
+  auth_url   = "https://slack.com/api/oauth.access?client_id=#{config[:client_id]}&client_secret=#{config[:client_secret]}&code=#{code}"
   response   = JSON.parse(HTTParty.get(auth_url).body)
   auth_token = response["access_token"]
 
-  redirect("/campaigns/new?token=#{auth_token}&channel_id=#{params[:channel_id]}")
+  redirect("/campaigns/new?token=#{auth_token}")
 end
 
 get "/campaigns/new" do
   @slack_auth_token   = params[:token]
-  @slack_channel_id   = params[:channel_id]
   mailchimp_lists_url = config[:mailchimp_api_url] + "lists/list.json"
   list_request_body   = { apikey: config[:mailchimp_api_key] }
   request_headers     = { "Content-Type" => "application/json" }
@@ -67,9 +66,8 @@ end
 
 post "/campaigns/links" do
   auth_token = params[:slack_auth_token]
-  channel_id = params[:slack_channel_id]
   timeframe  = Chronic.parse(params[:timeframe]).to_i
-  hist_url   = "https://slack.com/api/channels.history?token=#{auth_token}&channel=#{channel_id}&oldest=#{timeframe}"
+  hist_url   = "https://slack.com/api/channels.history?token=#{auth_token}&channel=#{session[:channel_id]}&oldest=#{timeframe}"
   response   = JSON.parse(HTTParty.get(hist_url).body)
   @links     = []
   @mailchimp_list = params[:mailchimp_list]
@@ -117,6 +115,8 @@ post "/campaigns/send" do
   end
 
   send_mailchimp_campaign(content: links_html, list: mailchimp_list)
+
+  session.delete(:channel_id)
 
   erb "send_campaign_confirmation.html".to_sym
 end
