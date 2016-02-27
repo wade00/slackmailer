@@ -9,6 +9,7 @@ require "dotenv"
 Bundler.require
 Dotenv.load
 enable :sessions
+set :session_secret, ENV["SESSION_SECRET"]
 
 config = {
   client_id:          ENV["CLIENT_ID"],
@@ -19,7 +20,6 @@ config = {
   outgoing_token:     ENV["OUTGOING_TOKEN"],
   slack_team_id:      ENV["SLACK_TEAM_ID"]
 }
-
 
 get "/" do
   "Hello world! Welcome to the slackmailer app. We let you create and send a new MailChimp campaign from a Slack channel!"
@@ -54,6 +54,7 @@ end
 
 get "/campaigns/new" do
   @slack_auth_token   = params[:token]
+  @slack_channel_id   = session[:channel_id]
   mailchimp_lists_url = config[:mailchimp_api_url] + "lists/list.json"
   list_request_body   = { apikey: config[:mailchimp_api_key] }
   request_headers     = { "Content-Type" => "application/json" }
