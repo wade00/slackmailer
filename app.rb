@@ -8,6 +8,7 @@ require "dotenv"
 
 Bundler.require
 Dotenv.load
+enable :sessions
 
 config = {
   client_id:          ENV["CLIENT_ID"],
@@ -29,7 +30,7 @@ post "/new" do
     session[:channel_id] = params[:channel_id]
     headers = { "Content-Type" => "application/json" }
     body    = { response_type: "ephemeral",
-                text: "It's time to build a MailChimp campaign with links from the #{params[:channel_name]} channel!",
+                text: "It's time to build a MailChimp campaign with links from the ##{params[:channel_name]} channel!",
                 attachments: [
                   {
                     color: "00ACEF",
