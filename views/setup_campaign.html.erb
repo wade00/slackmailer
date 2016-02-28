@@ -5,7 +5,7 @@
   <form action="/campaigns/links" method="post">
     <div class="link-form-container">
       <div class="styled-select centered text-center">
-        <p><label name="timeframe">How long ago do you want to grab links from ~<%= @slack_channel_id %>~?</label></p>
+        <p><label name="timeframe">How long ago do you want to grab links from?</label></p>
         <label class="font-awesome-label">
           <select name="timeframe">
             <option value="one week ago">One week ago</option>
@@ -27,7 +27,7 @@
       </div>
     </div>
     <input type="hidden" name="slack_auth_token", value="<%= @slack_auth_token %>">
-    <input type="hidden" name="slack_auth_token", value="<%= @slack_channel_id %>">
+    <input type="hidden" name="slack_channel_id", value="<%= @slack_channel_id %>">
     <div class="form-action-container">
       <input type="submit" value="Build campaign" class="btn">
     </div>
