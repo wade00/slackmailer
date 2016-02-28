@@ -8,7 +8,9 @@ require "dotenv"
 
 Bundler.require
 Dotenv.load
-use Rack::Session::Pool
+enable :sessions
+set :sessions, domain: "slackmailer.herokuapp.com"
+set :session_secret, ENV["SESSION_SECRET"]
 
 config = {
   client_id:          ENV["CLIENT_ID"],
