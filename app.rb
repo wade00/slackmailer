@@ -26,7 +26,7 @@ end
 
 post "/new" do
   if params[:token] == config[:outgoing_token]
-    state   = base64.encode({ channel_id: params[:channel_id] })
+    state   = Base64.encode({ channel_id: params[:channel_id] })
     headers = { "Content-Type" => "application/json" }
     body    = { response_type: "ephemeral",
                 text: "It's time to build a MailChimp campaign with links from the ##{params[:channel_name]} channel!",
@@ -54,7 +54,7 @@ end
 
 get "/campaigns/new" do
   @slack_auth_token   = params[:token]
-  @slack_channel_id   = base64.decode(params[:state])
+  @slack_channel_id   = Base64.decode(params[:state])
   mailchimp_lists_url = config[:mailchimp_api_url] + "lists/list.json"
   list_request_body   = { apikey: config[:mailchimp_api_key] }
   request_headers     = { "Content-Type" => "application/json" }
