@@ -54,7 +54,8 @@ end
 
 get "/campaigns/new" do
   @slack_auth_token   = params[:token]
-  @slack_channel_id   = Base64.urlsafe_decode64(params[:state])
+  state = Base64.urlsafe_decode64(params[:state]).to_json
+  @slack_channel_id   = state[:channel_id]
   mailchimp_lists_url = config[:mailchimp_api_url] + "lists/list.json"
   list_request_body   = { apikey: config[:mailchimp_api_key] }
   request_headers     = { "Content-Type" => "application/json" }
