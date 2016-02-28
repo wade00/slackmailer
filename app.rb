@@ -69,7 +69,7 @@ end
 
 post "/campaigns/links" do
   auth_token = params[:slack_auth_token]
-  channel_id = params[:channel_id]
+  channel_id = params[:slack_channel_id]
   timeframe  = Chronic.parse(params[:timeframe]).to_i
   hist_url   = "https://slack.com/api/channels.history?token=#{auth_token}&channel=#{channel_id}&oldest=#{timeframe}"
   response   = JSON.parse(HTTParty.get(hist_url).body)
