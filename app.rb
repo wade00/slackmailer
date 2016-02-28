@@ -26,7 +26,7 @@ end
 
 post "/new" do
   if params[:token] == config[:outgoing_token]
-    state   = Base64.urlsafe_encode64('{"channel_id":"' + params[:channel_id]} + '"}')
+    state   = Base64.urlsafe_encode64('{"channel_id":"' + params[:channel_id] + '"}')
     headers = { "Content-Type" => "application/json" }
     body    = { response_type: "ephemeral",
                 text: "It's time to build a MailChimp campaign with links from the ##{params[:channel_name]} channel!",
