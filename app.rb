@@ -118,7 +118,7 @@ post "/campaigns/send" do
     links_html
   end
 
-  send_mailchimp_campaign(content: links_html, list: mailchimp_list)
+  send_mailchimp_campaign(content: links_html, config: config, list: mailchimp_list)
 
   session.delete(:channel_id)
 
@@ -129,6 +129,7 @@ private
 
   def send_mailchimp_campaign(args)
     mailer_list       = args[:list]
+    config            = args[:config]
     new_campaign_url  = config[:mailchimp_api_url] + "campaigns/create.json"
     send_campaign_url = config[:mailchimp_api_url] + "campaigns/send.json"
     request_headers   = { "Content-Type" => "application/json" }
