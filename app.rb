@@ -38,7 +38,8 @@ post "/new" do
                 ]
               }
 
-    HTTParty.post(params[:response_url], body: body.to_json, headers: headers)
+    response = HTTParty.post(params[:response_url], body: body.to_json, headers: headers)
+    puts response
   end
 end
 
