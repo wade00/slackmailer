@@ -33,13 +33,13 @@ post "/new" do
                 attachments: [
                   {
                     color: "00ACEF",
-                    text: "<https://slack.com/oauth/authorize?client_id=#{config[:client_id]}&state=#{state}&team=#{config[:slack_team_id]}|Click this link to start a new mailer>"
+                    text: "<https://slack.com/oauth/authorize?client_id=#{config[:client_id]}&state=#{state}&team=#{config[:slack_team_id]}&scope=channels:history|Click this link to start a new mailer>"
                   }
                 ]
               }
 
     response = HTTParty.post(params[:response_url], body: body.to_json, headers: headers)
-    puts response
+    puts "Request complete"
   end
 end
 
